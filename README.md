@@ -49,7 +49,6 @@ The bridge exposes the same provider interface Even Terminal already speaks (`li
 
 - HUD-side approval cards (exec approvals still land on your other channel)
 - True token-streaming (reply is one `text_delta` chunk per turn — OpenClaw doesn't yet expose a streaming runtime hook)
-- Audio output (G2 has a speaker but Even Terminal Mode is text-only on the HUD)
 
 ## Setup
 
