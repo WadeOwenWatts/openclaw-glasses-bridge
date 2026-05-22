@@ -79,4 +79,4 @@ This is a derivative work of `@evenrealities/even-terminal`. The upstream packag
 
 Working for the maintainer's daily use. Filed under "share if useful, don't expect support" but issues + PRs welcome.
 
-Built by [@MollyMafia](https://x.com/MollyMafia).
+Built by [@alexanderlevin](https://x.com/alexanderlevin).
