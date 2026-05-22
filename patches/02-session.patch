@@ -1,0 +1,11 @@
+--- a/dist/session.js	2026-04-30 14:33:58.823692233 +0100
++++ b/dist/session.js	2026-04-30 17:50:48.095814638 +0100
+@@ -1,5 +1,7 @@
+ /** Global default provider, read once from env. */
+ export function getDefaultProvider() {
+     const env = process.env.DEFAULT_PROVIDER;
+-    return env === "codex" ? "codex" : "claude";
++    if (env === "openclaw") return "openclaw";
++    if (env === "codex") return "codex";
++    return "claude";
+ }

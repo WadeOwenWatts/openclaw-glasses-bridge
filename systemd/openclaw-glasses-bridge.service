@@ -1,0 +1,23 @@
+[Unit]
+Description=OpenClaw <-> Even G2 glasses bridge (Even Terminal fork)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=youruser
+WorkingDirectory=/home/youruser
+Environment="DEFAULT_PROVIDER=openclaw"
+Environment="OPENCLAW_GATEWAY_URL=http://127.0.0.1:18789"
+# Optional cross-surface mirror (delete the next 3 lines if you don't want it)
+Environment="GLASSES_TG_MIRROR_ENABLED=1"
+Environment="GLASSES_TG_CHANNEL=telegram"
+Environment="GLASSES_TG_TARGET_CHAT_ID=REPLACE_WITH_YOUR_CHAT_ID"
+# Put your gateway token here OR ensure the user can read ~/.openclaw/openclaw.json
+# Environment="OPENCLAW_GATEWAY_TOKEN=REPLACE_ME"
+ExecStart=/usr/bin/even-terminal --port 3457 --token REPLACE_WITH_RANDOM_HEX --tailscale --cwd /home/youruser/workspace
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

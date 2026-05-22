@@ -1,0 +1,52 @@
+--- a/dist/routes/core.js	2026-04-30 14:33:58.444691960 +0100
++++ b/dist/routes/core.js	2026-05-01 00:17:36.938466189 +0100
+@@ -3,6 +3,7 @@
+ import { broadcast, pushMessage, getMessages } from "./events.js";
+ import { createClaudeProvider } from "../claude/provider.js";
+ import { createCodexProvider } from "../codex/provider.js";
++import { createOpenClawProvider } from "../openclaw/provider.js";
+ import { CodexAppServerClient } from "../codex/app-server.js";
+ import { debugLog } from "../debug.js";
+ const router = Router();
+@@ -27,8 +28,18 @@
+ const codexClient = new CodexAppServerClient();
+ const claudeProvider = createClaudeProvider(emit);
+ const codexProvider = createCodexProvider(emit, () => codexClient);
++const openclawProvider = createOpenClawProvider(emit);
+ export function getProvider(name) {
+-    return (name || getDefaultProvider()) === "codex" ? codexProvider : claudeProvider;
++    const def = getDefaultProvider();
++    // When DEFAULT_PROVIDER=openclaw, route every query through openclaw
++    // regardless of the ?provider= query param. The Even App hardcodes
++    // ?provider=claude so without this short-circuit the phone never sees
++    // the openclaw-main session.
++    if (def === "openclaw") return openclawProvider;
++    const resolved = name || def;
++    if (resolved === "openclaw") return openclawProvider;
++    if (resolved === "codex") return codexProvider;
++    return claudeProvider;
+ }
+ // GET /api/sessions — list resumable sessions
+ router.get("/sessions", async (req, res) => {
+@@ -196,9 +207,20 @@
+     }
+ });
+ // GET /api/sessions/:id/history
++//
++// Upstream `even-terminal` hard-caps limit at 10. We override that ceiling
++// up to 200 so that the WebView, when it requests `?limit=10`, still gets
++// a generous slice of recent history if our provider has more to give.
++// Cross-surface mirror bubbles (Telegram I/O, progress pings, etc.) can
++// otherwise bury earlier turns out of the 10-deep visible window on
++// session re-entry. The Even App's WebView appears to render whatever
++// the server returns regardless of its own asked-for limit.
+ router.get("/sessions/:id/history", async (req, res) => {
+     const id = req.params.id;
+-    const limit = Math.min(parseInt(req.query.limit) || 10, 10);
++    const requested = parseInt(req.query.limit) || 50;
++    // Floor of 50 so a default ?limit=10 paint still gets useful context.
++    // Cap at 200 to match mirror-history's MAX_ENTRIES.
++    const limit = Math.min(Math.max(requested, 50), 200);
+     const providerName = req.query.provider || getDefaultProvider();
+     const provider = getProvider(providerName);
+     try {
